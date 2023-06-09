@@ -6,8 +6,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-public class ProgramPrinter implements CListener {
+import java.util.ArrayList;
 
+public class ProgramPrinter implements CListener {
+    int indent = 0;
     @Override
     public void enterPrimaryExpression(CParser.PrimaryExpressionContext ctx) {
 
@@ -691,10 +693,12 @@ public class ProgramPrinter implements CListener {
     @Override
     public void enterExternalDeclaration(CParser.ExternalDeclarationContext ctx) {
         System.out.println("program start{");
+        indent++;
     }
 
     @Override
     public void exitExternalDeclaration(CParser.ExternalDeclarationContext ctx) {
+        indent--;
         System.out.println("}");
     }
 
@@ -702,18 +706,19 @@ public class ProgramPrinter implements CListener {
     public void enterFunctionDefinition(CParser.FunctionDefinitionContext ctx) {
         String return_type = ctx.typeSpecifier().getText();
         String name = ctx.declarator().directDeclarator().directDeclarator().getText();
-        if (!name.equals("main")) {
-            print("normal method: name: " + name + "/ return type : " + return_type + "{", 1);
-            String para_list = Functions.parameter_list_to_str(ctx.declarator().directDeclarator().parameterTypeList().parameterList());
-            print(para_list, 2);
-            print("}", 1);
-        }
+        print("normal method: name: " + name + "/ return type : " + return_type + "{");
 
+        indent++;
+        ArrayList<Item> para_list = Functions.parameter_list_to_str(ctx.declarator().directDeclarator().parameterTypeList());
+        if (para_list != null) {
+            print(para_list.toString());
+        }
     }
 
     @Override
     public void exitFunctionDefinition(CParser.FunctionDefinitionContext ctx) {
-
+        indent--;
+        print("}");
     }
 
     @Override
@@ -746,7 +751,7 @@ public class ProgramPrinter implements CListener {
 
     }
 
-    public void print(String str, int indent) {
+    public void print(String str) {
         for (int i = 0; i < indent; i++) {
             System.out.print("    ");
         }

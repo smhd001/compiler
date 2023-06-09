@@ -6,10 +6,12 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.ArrayList;
+
 public class ProgramPrinter2 implements CListener {
-
-    SymbolTable Root = new SymbolTable(null);
-
+    int indent = 0;
+    SymbolTable Root = new SymbolTable(null,"Program",1);
+    SymbolTable Current = Root;
     @Override
     public void enterPrimaryExpression(CParser.PrimaryExpressionContext ctx) {
 
@@ -692,30 +694,35 @@ public class ProgramPrinter2 implements CListener {
 
     @Override
     public void enterExternalDeclaration(CParser.ExternalDeclarationContext ctx) {
-        System.out.println("program start{");
     }
 
     @Override
     public void exitExternalDeclaration(CParser.ExternalDeclarationContext ctx) {
-        System.out.println("}");
     }
 
     @Override
     public void enterFunctionDefinition(CParser.FunctionDefinitionContext ctx) {
-        String return_type = ctx.typeSpecifier().getText();
         String name = ctx.declarator().directDeclarator().directDeclarator().getText();
-        if (!name.equals("main")) {
-            print("normal method: name: " + name + "/ return type : " + return_type + "{", 1);
-            String para_list = Functions.parameter_list_to_str(ctx.declarator().directDeclarator().parameterTypeList().parameterList());
-            print(para_list, 2);
-            print("}", 1);
-        }
+        String return_type = ctx.typeSpecifier().getText();
+        ArrayList<Item> para_list = Functions.parameter_list_to_str(ctx.declarator().directDeclarator().parameterTypeList());
+        Item method_i = new Item("Method",name,return_type,para_list);
+        Current.put("Method_" + name,method_i);
 
+        SymbolTable inside_method = new SymbolTable(Current,name,ctx.start.getLine());
+        Current.add_children(inside_method);
+        Current = inside_method;
+        if (para_list != null) {
+            for (var p :
+                    para_list) {
+                p.kind = "MethodField";
+                Current.put("Field_" + p.name,p);
+            }
+        }
     }
 
     @Override
     public void exitFunctionDefinition(CParser.FunctionDefinitionContext ctx) {
-
+        Current = Current.Parent;
     }
 
     @Override
@@ -748,10 +755,20 @@ public class ProgramPrinter2 implements CListener {
 
     }
 
-    public void print(String str, int indent) {
+    public void print(String str) {
         for (int i = 0; i < indent; i++) {
             System.out.print("    ");
         }
         System.out.println(str);
+    }
+
+    public void printSymbolTable(SymbolTable s)
+    {
+        System.out.println(s);
+        if (s.Children.size() != 0)
+            for (var st :
+                    s.Children) {
+                printSymbolTable(st);
+            }
     }
 }

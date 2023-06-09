@@ -23,7 +23,8 @@ public class Main {
         parser.setBuildParseTree(true);
         ParseTree tree = parser.externalDeclaration();
         ParseTreeWalker walker = new ParseTreeWalker();
-        CListener listener = new ProgramPrinter();
+        ProgramPrinter2 listener = new ProgramPrinter2();
         walker.walk(listener, tree);
+        listener.printSymbolTable(listener.Root);;
     }
 }

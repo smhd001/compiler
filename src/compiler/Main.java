@@ -1,7 +1,6 @@
 package compiler;
 
 import gen.CLexer;
-import gen.CListener;
 import gen.CParser;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -24,7 +23,8 @@ public class Main {
         ParseTree tree = parser.externalDeclaration();
         ParseTreeWalker walker = new ParseTreeWalker();
         ProgramPrinter2 listener = new ProgramPrinter2();
+//        ProgramPrinter listener = new ProgramPrinter();
         walker.walk(listener, tree);
-        listener.printSymbolTable(listener.Root);;
+        listener.printSymbolTable(listener.Root);
     }
 }

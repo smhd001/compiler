@@ -224,7 +224,17 @@ public class ProgramPrinter2 implements CListener {
 
     @Override
     public void enterDeclaration(CParser.DeclarationContext ctx) {
-
+        String type = ctx.declarationSpecifiers().declarationSpecifier().get(0).typeSpecifier().getText();
+        String name;
+        if (ctx.declarationSpecifiers().declarationSpecifier().size() == 1) //array
+        {
+            name = ctx.initDeclaratorList().initDeclarator().get(0).declarator().directDeclarator().Identifier().getText();
+            int lenght = Integer.parseInt(ctx.initDeclaratorList().initDeclarator().get(0).declarator().directDeclarator().Constant().get(0).getText());
+            type = type + " array[" + lenght + "]";
+        } else {
+            name = ctx.declarationSpecifiers().declarationSpecifier().get(1).typeSpecifier().typedefName().getText();
+        }
+        Current.put("Field_" + name, new Item("Method Field", name, type));
     }
 
     @Override

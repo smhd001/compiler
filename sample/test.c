@@ -5,16 +5,23 @@ void myFunction(int myNumbers[5], char isOdd)
 		if (isOdd == 'y') {
 		    float a;
 		    int a;
+		    for(int j = 0; j < 10; j--)
+		    {
+		        int a;
+		    }
 			printf("%d\n", myNumbers[i]);
 		}
 	}
+    a++;
 }
-int myFunction(int myNumbers[5], char isOdd)
+int myFunction()
 {}
 int main()
 {
 	int myNumbers[5] = { 10, 20, 30, 40, 50 };
 	int a ;
+	b = 10;
+	b = b + 10;
 	myFunction(myNumbers);
 	return 0;
 }

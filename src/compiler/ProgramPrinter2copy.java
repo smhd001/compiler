@@ -8,13 +8,10 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 
-public class ProgramPrinter2 implements CListener {
+public class ProgramPrinter2copy implements CListener {
     private final SymbolTable Root = new SymbolTable(null, "Program", 1);
     private int nesting = 0;
     private SymbolTable Current = Root;
-
-    final String ANSI_RED = "\u001B[31m";
-    final String ANSI_RESET = "\u001B[0m";
 
     @Override
     public void enterPrimaryExpression(CParser.PrimaryExpressionContext ctx) {
@@ -48,18 +45,6 @@ public class ProgramPrinter2 implements CListener {
 
     @Override
     public void enterUnaryExpression(CParser.UnaryExpressionContext ctx) {
-        //TODO should be tested with more examples
-        if (ctx.postfixExpression().primaryExpression().Identifier() != null && ctx.postfixExpression().LeftParen().size() == 0) {
-            String name = ctx.postfixExpression().primaryExpression().Identifier().getText();
-            if (!isFieldDefined(name, Current)) {
-                System.out.println(
-                        ANSI_RED +
-                                "Error106 : in line [" + ctx.start.getLine() + ":" + ctx.start.getCharPositionInLine() + "], " +
-                                "can not find Variable " + name +
-                                ANSI_RESET
-                );
-            }
-        }
 
     }
 
@@ -245,8 +230,8 @@ public class ProgramPrinter2 implements CListener {
         if (ctx.declarationSpecifiers().declarationSpecifier().size() == 1) //array
         {
             name = ctx.initDeclaratorList().initDeclarator().get(0).declarator().directDeclarator().Identifier().getText();
-            int length = Integer.parseInt(ctx.initDeclaratorList().initDeclarator().get(0).declarator().directDeclarator().Constant().get(0).getText());
-            type = type + " array[" + length + "]";
+            int lenght = Integer.parseInt(ctx.initDeclaratorList().initDeclarator().get(0).declarator().directDeclarator().Constant().get(0).getText());
+            type = type + " array[" + lenght + "]";
         } else {
             name = ctx.declarationSpecifiers().declarationSpecifier().get(1).typeSpecifier().typedefName().getText();
         }
@@ -703,9 +688,7 @@ public class ProgramPrinter2 implements CListener {
 
     @Override
     public void enterForDeclaration(CParser.ForDeclarationContext ctx) {
-        String name = ctx.initDeclaratorList().initDeclarator().get(0).declarator().directDeclarator().Identifier().getText();
-        String type = ctx.declarationSpecifiers().getText();
-        Current.put("Field_" + name, new Item("Method Field", name, type), ctx);
+
     }
 
     @Override
@@ -739,8 +722,6 @@ public class ProgramPrinter2 implements CListener {
 
     @Override
     public void exitExternalDeclaration(CParser.ExternalDeclarationContext ctx) {
-        System.out.println();
-        printSymbolTable(Root);
     }
 
     @Override
@@ -755,7 +736,7 @@ public class ProgramPrinter2 implements CListener {
         if (para_list != null) {
             for (var p :
                     para_list) {
-                p.kind = "Method Param Field";
+                p.kind = "Method Field";
                 Current.put("Field_" + p.name, p, ctx);
             }
         }
@@ -797,6 +778,9 @@ public class ProgramPrinter2 implements CListener {
     }
 
     public void printSymbolTable(SymbolTable s) {
+        if (s == null) {
+            s = Root;
+        }
         System.out.println(s);
         if (s.getChildren().size() != 0)
             for (var st :
@@ -805,14 +789,43 @@ public class ProgramPrinter2 implements CListener {
             }
     }
 
-    //**************probably should be moved to somewhere else TODO
-    private boolean isFieldDefined(String name, SymbolTable scoop) {
-        if (scoop == null) {
-            return false;
+    //**************probably be moved to somewhere else TODO
+    public void printRedefinedErrors(SymbolTable s) {
+        final String ANSI_RED = "\u001B[31m";
+        final String ANSI_RESET = "\u001B[0m";
+        if (s == null) {
+            s = Root;
         }
-        if (scoop.containsKey("Field_" + name)) {
-            return true;
+        for (var i :
+                s.keySet()) {
+            var item = s.get(i);
+            if (item.kind.equals("Method Field")) {
+                if (item.redefined) {
+                    var l = i.split("_");
+                    System.out.println(
+                            ANSI_RED +
+                                    "Error104 : in line [" + l[2] + ":" + l[3] + "]" +
+                                    ", field " + l[1] + "  has been defined already" +
+                                    ANSI_RESET
+                    );
+                }
+            }
+            if (item.kind.equals("Method")) {
+                if (item.redefined) {
+                    var l = i.split("_");
+                    System.out.println(
+                            ANSI_RED +
+                                    "Error102 : in line [" + l[2] + ":" + l[3] + "]" +
+                                    " , method " + l[1] + "  has been defined already" +
+                                    ANSI_RESET
+                    );
+                }
+            }
         }
-        return isFieldDefined(name, scoop.Parent);
+        if (s.getChildren().size() != 0)
+            for (var st :
+                    s.getChildren()) {
+                printRedefinedErrors(st);
+            }
     }
 }

@@ -9,9 +9,10 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import java.util.ArrayList;
 
 public class ProgramPrinter2 implements CListener {
-    int indent = 0;
-    SymbolTable Root = new SymbolTable(null,"Program",1);
+    int nesting = 0;
+    SymbolTable Root = new SymbolTable(null, "Program", 1);
     SymbolTable Current = Root;
+
     @Override
     public void enterPrimaryExpression(CParser.PrimaryExpressionContext ctx) {
 
@@ -234,7 +235,7 @@ public class ProgramPrinter2 implements CListener {
         } else {
             name = ctx.declarationSpecifiers().declarationSpecifier().get(1).typeSpecifier().typedefName().getText();
         }
-        Current.put("Field_" + name, new Item("Method Field", name, type));
+        Current.put("Field_" + name, new Item("Method Field", name, type), ctx);
     }
 
     @Override
@@ -644,22 +645,35 @@ public class ProgramPrinter2 implements CListener {
 
     @Override
     public void enterSelectionStatement(CParser.SelectionStatementContext ctx) {
-
+        //if
+        nesting++;
+        if (nesting > 1) {
+            Current = new SymbolTable(Current, "nested_if", ctx.start.getLine());
+        }
     }
 
     @Override
     public void exitSelectionStatement(CParser.SelectionStatementContext ctx) {
-
+        nesting--;
+        if (nesting > 0) {
+            Current = Current.Parent;
+        }
     }
 
     @Override
     public void enterIterationStatement(CParser.IterationStatementContext ctx) {
-
+        nesting++;
+        if (nesting > 1) {
+            Current = new SymbolTable(Current, "nested_if", ctx.start.getLine());
+        }
     }
 
     @Override
     public void exitIterationStatement(CParser.IterationStatementContext ctx) {
-
+        nesting--;
+        if (nesting > 0) {
+            Current = Current.Parent;
+        }
     }
 
     @Override
@@ -715,17 +729,15 @@ public class ProgramPrinter2 implements CListener {
         String name = ctx.declarator().directDeclarator().directDeclarator().getText();
         String return_type = ctx.typeSpecifier().getText();
         ArrayList<Item> para_list = Functions.parameter_list_to_str(ctx.declarator().directDeclarator().parameterTypeList());
-        Item method_i = new Item("Method",name,return_type,para_list);
-        Current.put("Method_" + name,method_i);
+        Item method_i = new Item("Method", name, return_type, para_list);
+        Current.put("Method_" + name, method_i, ctx);
 
-        SymbolTable inside_method = new SymbolTable(Current,name,ctx.start.getLine());
-        Current.add_children(inside_method);
-        Current = inside_method;
+        Current = new SymbolTable(Current, name, ctx.start.getLine());
         if (para_list != null) {
             for (var p :
                     para_list) {
-                p.kind = "MethodField";
-                Current.put("Field_" + p.name,p);
+                p.kind = "MethodFiejld";
+                Current.put("Field_" + p.name, p, ctx);
             }
         }
     }
@@ -765,19 +777,11 @@ public class ProgramPrinter2 implements CListener {
 
     }
 
-    public void print(String str) {
-        for (int i = 0; i < indent; i++) {
-            System.out.print("    ");
-        }
-        System.out.println(str);
-    }
-
-    public void printSymbolTable(SymbolTable s)
-    {
+    public void printSymbolTable(SymbolTable s) {
         System.out.println(s);
-        if (s.Children.size() != 0)
+        if (s.getChildren().size() != 0)
             for (var st :
-                    s.Children) {
+                    s.getChildren()) {
                 printSymbolTable(st);
             }
     }

@@ -25,6 +25,8 @@ public class Main {
         ProgramPrinter2 listener = new ProgramPrinter2();
 //        ProgramPrinter listener = new ProgramPrinter();
         walker.walk(listener, tree);
-        listener.printSymbolTable(listener.Root);
+        listener.printSymbolTable(null);
+        listener.printRedefinedErrors(null);
+
     }
 }

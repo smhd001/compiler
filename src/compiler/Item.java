@@ -10,6 +10,8 @@ public class Item {
     ArrayList<Item> Parameter_list = new ArrayList<>();
     String type = null;
 
+    boolean redefined = false;
+
     public Item(String kind, String name, String return_type, ArrayList<Item> parameter_list) { //for methods
         this.kind = kind;
         this.name = name;

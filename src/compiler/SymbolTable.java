@@ -26,6 +26,7 @@ public class SymbolTable extends HashMap<String, Item> {
             int line = ctx.start.getLine();
             int column = ctx.start.getCharPositionInLine();
             key += "_" + line + "_" + column;
+            value.redefined = true;
         }
         return super.put(key, value);
     }

@@ -9,9 +9,9 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import java.util.ArrayList;
 
 public class ProgramPrinter2 implements CListener {
-    int nesting = 0;
-    SymbolTable Root = new SymbolTable(null, "Program", 1);
-    SymbolTable Current = Root;
+    private final SymbolTable Root = new SymbolTable(null, "Program", 1);
+    private int nesting = 0;
+    private SymbolTable Current = Root;
 
     @Override
     public void enterPrimaryExpression(CParser.PrimaryExpressionContext ctx) {
@@ -736,7 +736,7 @@ public class ProgramPrinter2 implements CListener {
         if (para_list != null) {
             for (var p :
                     para_list) {
-                p.kind = "MethodFiejld";
+                p.kind = "Method Field";
                 Current.put("Field_" + p.name, p, ctx);
             }
         }
@@ -778,11 +778,54 @@ public class ProgramPrinter2 implements CListener {
     }
 
     public void printSymbolTable(SymbolTable s) {
+        if (s == null) {
+            s = Root;
+        }
         System.out.println(s);
         if (s.getChildren().size() != 0)
             for (var st :
                     s.getChildren()) {
                 printSymbolTable(st);
+            }
+    }
+
+    //**************probably be moved to somewhere else TODO
+    public void printRedefinedErrors(SymbolTable s) {
+        final String ANSI_RED = "\u001B[31m";
+        final String ANSI_RESET = "\u001B[0m";
+        if (s == null) {
+            s = Root;
+        }
+        for (var i :
+                s.keySet()) {
+            var item = s.get(i);
+            if (item.kind.equals("Method Field")) {
+                if (item.redefined) {
+                    var l = i.split("_");
+                    System.out.println(
+                            ANSI_RED +
+                                    "Error104 : in line [" + l[2] + ":" + l[3] + "]" +
+                                    ", field " + l[1] + "  has been defined already" +
+                                    ANSI_RESET
+                    );
+                }
+            }
+            if (item.kind.equals("Method")) {
+                if (item.redefined) {
+                    var l = i.split("_");
+                    System.out.println(
+                            ANSI_RED +
+                                    "Error102 : in line [" + l[2] + ":" + l[3] + "]" +
+                                    " , method " + l[1] + "  has been defined already" +
+                                    ANSI_RESET
+                    );
+                }
+            }
+        }
+        if (s.getChildren().size() != 0)
+            for (var st :
+                    s.getChildren()) {
+                printRedefinedErrors(st);
             }
     }
 }

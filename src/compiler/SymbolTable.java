@@ -23,7 +23,7 @@ public class SymbolTable extends HashMap<String, Item> {
         this.lineNumber = number;
     }
 
-    public Item put(String key, Item value, ParserRuleContext ctx) {
+    public void put(String key, Item value, ParserRuleContext ctx) {
         if (this.containsKey(key)) {
             int line = ctx.start.getLine();
             int column = ctx.start.getCharPositionInLine();
@@ -45,7 +45,7 @@ public class SymbolTable extends HashMap<String, Item> {
             }
             key += "_" + line + "_" + column;
         }
-        return super.put(key, value);
+        super.put(key, value);
     }
 
     public void add_children(SymbolTable s) {

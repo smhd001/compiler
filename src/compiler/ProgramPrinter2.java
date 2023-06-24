@@ -9,12 +9,12 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import java.util.ArrayList;
 
 public class ProgramPrinter2 implements CListener {
-    private final SymbolTable Root = new SymbolTable(null, "Program", 1);
-    private int nesting = 0;
-    private SymbolTable Current = Root;
-
     final String ANSI_RED = "\u001B[31m";
     final String ANSI_RESET = "\u001B[0m";
+    private final SymbolTable Root = new SymbolTable(null, "Program", 1);
+    private int nesting = 0;
+    private String currentReturnType = null;
+    private SymbolTable Current = Root;
 
     @Override
     public void enterPrimaryExpression(CParser.PrimaryExpressionContext ctx) {
@@ -725,7 +725,30 @@ public class ProgramPrinter2 implements CListener {
 
     @Override
     public void enterJumpStatement(CParser.JumpStatementContext ctx) {
+        //Does not support expression TODO
+        //Does not support constants
+        //need more testing
+        var r = ctx.expression().assignmentExpression(0).conditionalExpression().logicalOrExpression().
+                logicalAndExpression(0).inclusiveOrExpression(0).exclusiveOrExpression(0).andExpression(0).
+                equalityExpression(0).relationalExpression(0).shiftExpression(0).additiveExpression(0).
+                multiplicativeExpression(0).castExpression(0).unaryExpression().postfixExpression().
+                primaryExpression();
+        if (r.Constant() == null) {
+            var rName = r.Identifier().getText();
+            var rItem = Current.get("Field_" + rName);
+            if (rItem != null) {
+                var rType = rItem.type;
+                if (!rType.equals(currentReturnType)) {
+                    System.out.println(
+                            ANSI_RED +
+                                    "Error210 : in line [" + ctx.start.getLine() + ":" + ctx.start.getCharPositionInLine() + "], " +
+                                    "return type of this method must be " + currentReturnType +
+                                    ANSI_RESET
+                    );
+                }
+            }
 
+        }
     }
 
     @Override
@@ -740,7 +763,7 @@ public class ProgramPrinter2 implements CListener {
     @Override
     public void exitExternalDeclaration(CParser.ExternalDeclarationContext ctx) {
         System.out.println();
-        printSymbolTable(Root);
+//        printSymbolTable(Root);
     }
 
     @Override
@@ -750,6 +773,7 @@ public class ProgramPrinter2 implements CListener {
         ArrayList<Item> para_list = Functions.parameter_list_to_str(ctx.declarator().directDeclarator().parameterTypeList());
         Item method_i = new Item("Method", name, return_type, para_list);
         Current.put("Method_" + name, method_i, ctx);
+        currentReturnType = return_type;
 
         Current = new SymbolTable(Current, name, ctx.start.getLine());
         if (para_list != null) {

@@ -42,7 +42,16 @@ public class ProgramPrinter implements CListener {
 
     @Override
     public void enterUnaryExpression(CParser.UnaryExpressionContext ctx) {
-
+        //TODO should be tested with more examples
+        if (ctx.postfixExpression().primaryExpression().Identifier() != null && ctx.postfixExpression().LeftParen().size() != 0) {
+            String name = ctx.postfixExpression().primaryExpression().Identifier().getText();
+            System.out.print("Function call:" + name + "/ params:" );
+            var argsList=ctx.postfixExpression().argumentExpressionList(0).assignmentExpression();
+            for (int i = 0; i < argsList.size(); i++) {
+                System.out.print(argsList.get(i).getText() + " (index:"+ i + "), ");
+            }
+            System.out.println();
+        }
     }
 
     @Override
@@ -232,7 +241,7 @@ public class ProgramPrinter implements CListener {
         } else {
             name = ctx.declarationSpecifiers().declarationSpecifier().get(1).typeSpecifier().typedefName().getText();
         }
-        print("field:" + " (name: " + name + ") (type: " + type + ")");
+        print("field:" + name + "/type: " + type);
     }
 
     @Override
@@ -716,7 +725,7 @@ public class ProgramPrinter implements CListener {
     public void enterFunctionDefinition(CParser.FunctionDefinitionContext ctx) {
         String return_type = ctx.typeSpecifier().getText();
         String name = ctx.declarator().directDeclarator().directDeclarator().getText();
-        print("normal method: name: " + name + "/ return type : " + return_type + "{");
+        print("normal method: " + name + "/ return type = " + return_type + "{");
 
         indent++;
         ArrayList<Item> para_list = Functions.parameter_list_to_str(ctx.declarator().directDeclarator().parameterTypeList());

@@ -22,8 +22,8 @@ public class Main {
         parser.setBuildParseTree(true);
         ParseTree tree = parser.externalDeclaration();
         ParseTreeWalker walker = new ParseTreeWalker();
-        ProgramPrinter2 listener = new ProgramPrinter2();
-//        ProgramPrinter listener = new ProgramPrinter();
+//        ProgramPrinter2 listener = new ProgramPrinter2();
+        ProgramPrinter listener = new ProgramPrinter();
         walker.walk(listener, tree);
     }
 }

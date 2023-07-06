@@ -763,7 +763,7 @@ public class ProgramPrinter2 implements CListener {
     @Override
     public void exitExternalDeclaration(CParser.ExternalDeclarationContext ctx) {
         System.out.println();
-//        printSymbolTable(Root);
+        printSymbolTable(Root);
     }
 
     @Override

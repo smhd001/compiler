@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 public class ProgramPrinter implements CListener {
     int indent = 0;
+    int nesting = 0;
     @Override
     public void enterPrimaryExpression(CParser.PrimaryExpressionContext ctx) {
 
@@ -45,6 +46,9 @@ public class ProgramPrinter implements CListener {
         //TODO should be tested with more examples
         if (ctx.postfixExpression().primaryExpression().Identifier() != null && ctx.postfixExpression().LeftParen().size() != 0) {
             String name = ctx.postfixExpression().primaryExpression().Identifier().getText();
+            for (int i = 0; i < indent; i++) {
+                System.out.print("    ");
+            }
             System.out.print("Function call:" + name + "/ params:" );
             var argsList=ctx.postfixExpression().argumentExpressionList(0).assignmentExpression();
             for (int i = 0; i < argsList.size(); i++) {
@@ -651,21 +655,38 @@ public class ProgramPrinter implements CListener {
 
     @Override
     public void enterSelectionStatement(CParser.SelectionStatementContext ctx) {
-
+        nesting++;
+        if (nesting > 1) {
+            print("nested statement{");
+            indent++;
+        }
     }
 
     @Override
     public void exitSelectionStatement(CParser.SelectionStatementContext ctx) {
-
+        nesting--;
+        if (nesting > 0) {
+            indent--;
+            print("}");
+        }
     }
 
     @Override
     public void enterIterationStatement(CParser.IterationStatementContext ctx) {
-
+        nesting++;
+        if (nesting > 1) {
+            print("nested statement{");
+            indent++;
+        }
     }
 
     @Override
     public void exitIterationStatement(CParser.IterationStatementContext ctx) {
+        nesting--;
+        if (nesting > 0) {
+            indent--;
+            print("}");
+        }
 
     }
 

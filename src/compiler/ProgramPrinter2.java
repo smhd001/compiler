@@ -61,11 +61,12 @@ public class ProgramPrinter2 implements CListener {
                                 ANSI_RESET
                 );
             }
-            // Function call
+        // Function call
         } else if (ctx.postfixExpression().primaryExpression().Identifier() != null && ctx.postfixExpression().LeftParen().size() != 0) {
             String name = ctx.postfixExpression().primaryExpression().Identifier().getText();
             var argsList=ctx.postfixExpression().argumentExpressionList(0).assignmentExpression();
-            if (argsList.size() != Root.get("Method_"+name).Parameter_list.size()) {
+            var paramList = Root.get("Method_"+name).Parameter_list;
+            if (argsList.size() != paramList.size()) {
                 System.out.println(
                         ANSI_RED +
                                 "Error220 : in line [" + ctx.start.getLine() + ":" + ctx.start.getCharPositionInLine() + "], " +
@@ -74,8 +75,20 @@ public class ProgramPrinter2 implements CListener {
                 );
                 return;
             }
+            // check argument type with parameter type
             for (int i = 0; i < argsList.size(); i++) {
-                // TODO
+                try{
+                    if(!Current.get("Field_"+argsList.get(i).getText()).type.equals(paramList.get(i).type)){
+                        System.out.println(
+                                ANSI_RED +
+                                        "Error220 : in line [" + ctx.start.getLine() + ":" + ctx.start.getCharPositionInLine() + "], " +
+                                        "Mismatch arguments in " + name +
+                                        ANSI_RESET
+                        );
+                    }
+                }catch (Exception e){
+
+                }
             }
         }
 

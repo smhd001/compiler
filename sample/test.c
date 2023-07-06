@@ -19,7 +19,7 @@ int myFunction()
     int d;
     return c + d;
 }
-int myFunction2()
+int myFunction2(int a)
 {
     float c;
     int d;

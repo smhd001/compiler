@@ -3,6 +3,7 @@ package compiler;
 import gen.CListener;
 import gen.CParser;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -25,6 +26,7 @@ public class ProgramPrinter2 implements CListener {
     public void exitPrimaryExpression(CParser.PrimaryExpressionContext ctx) {
 
     }
+
 
     @Override
     public void enterPostfixExpression(CParser.PostfixExpressionContext ctx) {
@@ -58,6 +60,22 @@ public class ProgramPrinter2 implements CListener {
                                 "can not find Variable " + name +
                                 ANSI_RESET
                 );
+            }
+            // Function call
+        } else if (ctx.postfixExpression().primaryExpression().Identifier() != null && ctx.postfixExpression().LeftParen().size() != 0) {
+            String name = ctx.postfixExpression().primaryExpression().Identifier().getText();
+            var argsList=ctx.postfixExpression().argumentExpressionList(0).assignmentExpression();
+            if (argsList.size() != Root.get("Method_"+name).Parameter_list.size()) {
+                System.out.println(
+                        ANSI_RED +
+                                "Error220 : in line [" + ctx.start.getLine() + ":" + ctx.start.getCharPositionInLine() + "], " +
+                                "Mismatch arguments in " + name +
+                                ANSI_RESET
+                );
+                return;
+            }
+            for (int i = 0; i < argsList.size(); i++) {
+                // TODO
             }
         }
 
@@ -200,7 +218,21 @@ public class ProgramPrinter2 implements CListener {
 
     @Override
     public void enterAssignmentExpression(CParser.AssignmentExpressionContext ctx) {
+        if (ctx.assignmentExpression() != null && ctx.assignmentOperator().getText().equals("=") ){
+            var var1 =ctx.unaryExpression();
+            var var2 =ctx.assignmentExpression();
+            var var1_symbol = Current.get("Field_" + var1.getText());
+            var var2_symbol = Current.get("Field_" + var2.getText());
 
+            if((var1_symbol != null) && (var2_symbol != null) && !var1_symbol.type.equals(var2_symbol.type)){
+                System.out.println(
+                        ANSI_RED +
+                                "Error230 : in line [" + ctx.start.getLine() + ":" + ctx.start.getCharPositionInLine() + "], " +
+                                "Incompatible types : [" +  var1_symbol.type + "] can not be converted to ["+ var2_symbol.type + "]" +
+                                ANSI_RESET
+                );
+            }
+        }
     }
 
     @Override

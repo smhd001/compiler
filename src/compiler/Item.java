@@ -7,7 +7,7 @@ public class Item {
     String kind = null;
     String name = null;
     String return_type = null;
-    ArrayList<Item> Parameter_list = new ArrayList<>();
+    ArrayList<Item> Parameter_list = new ArrayList<Item>();
     String type = null;
 
     boolean redefined = false;
@@ -16,7 +16,9 @@ public class Item {
         this.kind = kind;
         this.name = name;
         this.return_type = return_type;
-        Parameter_list = parameter_list;
+        if ( parameter_list != null){
+            Parameter_list = parameter_list;
+        }
     }
 
     public Item(String kind, String name, String type) { //for fields
@@ -36,7 +38,7 @@ public class Item {
         }
     }
     public String parameterListStr () {
-        if (Parameter_list == null) {
+        if (Parameter_list.size() == 0) {
             return null;
         }
         Iterator<Item> iter = Parameter_list.iterator();
